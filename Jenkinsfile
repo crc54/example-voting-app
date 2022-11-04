@@ -34,21 +34,13 @@ pipeline {
             }
           }
       }
-      stage('Docker BnP'){
+       stage('Docker BnP'){
           agent any
           steps{
             echo 'Packaging vote app with docker'
-            script{
-              docker.withRegistry('https://index.docker.io/v1/', 'dockerlogin') {
-                  def voteImage = docker.build("8tm7pn2qc2/vote:v${env.BUILD_ID}", "./vote")
-                  voteImage.push()
-                  voteImage.push("dev")
-	          voteImage.push("latest")
-              }
-            }
           }
       }
-
+ 
   }
 
   post{
