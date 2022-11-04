@@ -1,53 +1,64 @@
 pipeline {
-
   agent none
-
-
-  stages{
-      stage('Build'){
-          agent{
-            docker{
-              image 'python:2.7.16-slim'
-              args '--user root'
-            }
-          }
-          steps{
-            echo 'Compiling vote app'
-            dir('vote'){
-              sh 'pip install -r requirements.txt'
-            }
-          }
+  stages {
+    stage('Build') {
+      agent {
+        docker {
+          image 'python:2.7.16-slim'
+          args '--user root'
+        }
 
       }
-      stage('Unit Test'){
-          agent{
-            docker{
+      steps {
+        echo 'Compiling vote app'
+        dir(path: 'vote') {
+          sh 'pip install -r requirements.txt'
+        }
+
+      }
+    }
+
+    stage('Unit Test') {
+      parallel {
+        stage('Unit Test') {
+          agent {
+            docker {
               image 'python:2.7.16-slim'
               args '--user root'
             }
+
           }
-          steps{
+          steps {
             echo 'Running Unit Tests on vote app'
-            dir('vote'){
+            dir(path: 'vote') {
               sh 'pip install -r requirements.txt'
               sh 'nosetests -v'
             }
-          }
-      }
-       stage('Docker BnP'){
-          agent any
-          steps{
-            echo 'Packaging vote app with docker'
-          }
-      }
- 
-  }
 
-  post{
-    always{
-        echo 'Pipeline for vote is complete..'
+          }
+        }
+
+        stage('sleep') {
+          steps {
+            sh 'sleep 2'
+          }
+        }
+
+      }
     }
- 
-  }
 
+    stage('Docker BnP') {
+      agent any
+      steps {
+        echo 'Packaging vote app with docker'
+      }
+    }
+
+  }
+  post {
+    always {
+      echo 'Pipeline for vote is complete..'
+    }
+
+  }
 }
